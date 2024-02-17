@@ -152,7 +152,7 @@ def update_application_name():
 
 
     return jsonify(
-        data
+        application
     ), 201
 
 

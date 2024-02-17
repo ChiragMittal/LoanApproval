@@ -53,6 +53,11 @@ class FlaskAppTest(unittest.TestCase):
         # Validate the response data or add more assertions as needed
         assert 'risk_score' in json.loads(status_response.data)
 
+        edit_response = self.app.post('/update_application_name', json={'id': loan_id,
+         'application_name': "Try"})
+
+        assert edit_response.status_code == 201
+
 
 if __name__ == '__main__':
     unittest.main()
