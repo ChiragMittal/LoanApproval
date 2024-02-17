@@ -1,6 +1,0 @@
-flask
-sqlalchemy
-flask_restful
-marshmallow
-flask-cors
-pytest
