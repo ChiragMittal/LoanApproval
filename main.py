@@ -7,6 +7,7 @@ from flask_restful import Resource, Api
 from sqlalchemy.orm import sessionmaker, relationship
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
+from flask_cors import CORS
 
 Base = declarative_base()
 
@@ -66,16 +67,29 @@ class RiskAssessment:
     @staticmethod
     def assess_risk(application):
 
-        risk_score = (application.get('credit_score')/1000) * 0.7 + (application.get('loan_amount')/application.get('income')) * 0.2 
-        + (1 if (application.get('employment_status')).lower() == 'employed' else 0) * 0.1
+        credit_score_str = str(application.get('credit_score'))
+        loan_amount_str = str(application.get('loan_amount'))
+        income_str = str(application.get('income'))
 
-        return risk_score
+        # Check if any of the values is not a valid string representation of a numeric value
+        if credit_score_str.isdigit() and loan_amount_str.replace('.', '').isdigit() and income_str.replace('.', '').isdigit():
+            # Convert the valid string representations to integers
+            credit_score = int(credit_score_str)
+            loan_amount = float(loan_amount_str)
+            income = float(income_str)
 
+            # Calculate risk score
+            risk_score = (credit_score / 1000) * 0.7 + (loan_amount / income) * 0.2 + (1 if application.get('employment_status').lower() == 'employed' else 0) * 0.1
+
+            return risk_score
+        else:
+            return 0
 
 db_connect = create_engine('sqlite:///loan.db')
 Base.metadata.create_all(db_connect)
 app = Flask(__name__)
 api = Api(app)
+CORS(app)
 Session = sessionmaker(bind=db_connect)
 session = Session()
 
@@ -99,7 +113,7 @@ def all_users():
 
 @app.route("/create_new_loan_application", methods=["POST"])
 def create_new_loan_application():
-    data = request.get_json()
+    data = request.get_json().get('data')
 
     new_application_id = str(uuid.uuid4())
     new_application = LoanApplication(
@@ -151,17 +165,15 @@ def create_new_user():
         data
     ), 201
 
-@app.route("/risk_score", methods=["POST"])
-def get_risk_score():
+@app.route("/get_status", methods=["POST"])
+def get_status():
     data = request.get_json()
-    application = session.query(LoanApplication).filter_by(id=data.get('id')).first()
+    application = session.query(LoanStatus).filter_by(loan_application_id=data.get('id')).first()
     if application:
         single =  application.to_dict()
-        risk_score = RiskAssessment.assess_risk(single)
+        return (single), 200
     else:
         return jsonify({'error': 'Risk Score not found'}), 404
-
-    return (str(risk_score)), 200
 
 @app.route("/get_all_per_user", methods=["POST"])
 def get_all_loan_applications_per_user():
@@ -192,12 +204,26 @@ def update_application_name():
 
 
 @app.route('/delete_application', methods=['POST'])
-def delete_user():
+def delete_application():
     data = request.get_json()
     appplication_to_delete = session.query(LoanApplication).filter_by(id=data.get('id')).first()
 
     if appplication_to_delete:
         session.delete(appplication_to_delete)
+        session.commit()
+
+        return jsonify({'message': 'Application deleted successfully'})
+    else:
+        return jsonify({'error': 'Application not found'})
+
+
+@app.route('/delete_all_application', methods=['POST'])
+def delete_all_application():
+    appplication_to_delete = session.query(LoanApplication).all()
+
+    if appplication_to_delete:
+        for loan_application in appplication_to_delete:
+            session.delete(loan_application)
         session.commit()
 
         return jsonify({'message': 'Application deleted successfully'})
