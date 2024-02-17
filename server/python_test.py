@@ -24,16 +24,11 @@ class FlaskAppTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_create_new_user(self):
-        data = {"name": "John Doe"}
-        response = self.app.post('/create_new_user', json={'data': data})
-        self.assertEqual(response.status_code, 201)
-
-    def test_create_new_loan_application(self):
         user_data = {"name": "Test User"}
         user_response = self.app.post('/create_new_user', json={'data': user_data})
         self.assertEqual(user_response.status_code, 201)
 
-    def test_get_status(self):
+    def test_create_new_loan_application(self):
         loan_data = {
             "application_name": "Test Application",
             "user_id": "1",  # Replace with an existing user_id from your database
@@ -48,6 +43,16 @@ class FlaskAppTest(unittest.TestCase):
         # Inspect the response data structure
         response_data = json.loads(loan_response.data)
         self.assertEqual(loan_response.status_code, 201)
+
+        loan_id = json.loads(loan_response.data).get('id')
+
+        # Retrieve loan status using the loan ID
+        status_response = self.app.post('/get_status', json={'id': loan_id})
+        assert status_response.status_code == 200
+
+        # Validate the response data or add more assertions as needed
+        assert 'risk_score' in json.loads(status_response.data)
+
 
 if __name__ == '__main__':
     unittest.main()
