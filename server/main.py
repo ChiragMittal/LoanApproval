@@ -101,7 +101,7 @@ def create_new_loan_application():
 
     return jsonify(
         data
-    ), 201
+    ), 200
 
 
 @app.route("/create_new_user", methods=["POST"])
@@ -119,7 +119,7 @@ def create_new_user():
 
     return jsonify(
         data
-    ), 201
+    ), 200
 
 
 @app.route("/get_status", methods=["POST"])
@@ -128,7 +128,7 @@ def get_status():
     application = session.query(LoanStatus).filter_by(loan_application_id=data.get('id')).first()
     if application:
         single = application.to_dict()
-        return (single), 200
+        return single, 200
     else:
         return jsonify({'error': 'Risk Score not found'}), 404
 
@@ -139,7 +139,7 @@ def get_all_loan_applications_per_user():
     applications = session.query(LoanApplication).filter_by(user_id=data.get('id')).all()
     if applications:
         all = [application.to_dict() for application in applications]
-        return (all), 200
+        return all, 200
     else:
         return jsonify({'error': 'Risk Score not found'}), 404
 
@@ -157,7 +157,7 @@ def update_application_name():
 
     return jsonify(
         data
-    ), 201
+    ), 200
 
 
 @app.route('/delete_application', methods=['POST'])
