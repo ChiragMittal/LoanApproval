@@ -28,21 +28,20 @@ function Home() {
 
       axios.post('http://127.0.0.1:5000/create_new_user',{'name': name})
       .then(data=>{
+        setName('')
+        setModal(false)
         setRefresh(!refresh)
       })
       .catch(e =>{
         console.log(e)
       })
-
-      setName('')
-      setModal(false)
     }
 
   }
 
   return (
     <div className="Home">
-        <h1>Loan Application</h1>
+        <h1>Loan Application Users</h1>
 
         <button onClick={()=> setModal(!modal)}>Add User</button>
 
@@ -51,7 +50,7 @@ function Home() {
 
           <div>
             <label for="username">Username:</label>
-            <input type="text" id="name" name="name" required onChange={(e)=> setName(e.target.value)}/>
+            <input value={name} type="text" id="name" name="name" required onChange={(e)=> setName(e.target.value)}/>
 
             <button onClick={create_new_user} >Add</button>
           </div>

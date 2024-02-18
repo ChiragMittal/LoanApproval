@@ -96,37 +96,37 @@ const UserProfile = () => {
     
               <div className='add_application'>
                 <label for="username">Application Name:</label>
-                <input type="text" id="name" name="name" required onChange={(e)=> setData((prevObject) => ({
+                <input value={data.application_name} type="text" id="name" name="name" required onChange={(e)=> setData((prevObject) => ({
                                                                             ...prevObject,
                                                                             application_name: e.target.value, 
                                                                             }))}/>
 
                 <label for="score">Credit Score:</label>
-                <input type="text" id="score" name="score" required onChange={(e)=> setData((prevObject) => ({
+                <input value={data.credit_score} type="text" id="score" name="score" required onChange={(e)=> setData((prevObject) => ({
                                                                             ...prevObject,
                                                                             credit_score: e.target.value, 
                                                                             }))}/>
 
                 <label for="purpose">Loan Purpose:</label>
-                <input type="text" id="purpose" name="purpose" required onChange={(e)=> setData((prevObject) => ({
+                <input value={data.loan_purpose} type="text" id="purpose" name="purpose" required onChange={(e)=> setData((prevObject) => ({
                                                                             ...prevObject,
                                                                             loan_purpose: e.target.value, 
                                                                             }))}/>
 
                 <label for="amount">Loan Amount:</label>
-                <input type="text" id="amount" name="amount" required onChange={(e)=> setData((prevObject) => ({
+                <input value={data.loan_amount} type="text" id="amount" name="amount" required onChange={(e)=> setData((prevObject) => ({
                                                                             ...prevObject,
                                                                             loan_amount: e.target.value, 
                                                                             }))}/>
 
                 <label for="Income">Income:</label>
-                <input type="text" id="Income" name="Income" required onChange={(e)=> setData((prevObject) => ({
+                <input value={data.income} type="text" id="Income" name="Income" required onChange={(e)=> setData((prevObject) => ({
                                                                             ...prevObject,
                                                                             income: e.target.value, 
                                                                             }))}/>
 
                 <label for="employment">Employment:</label>
-                <input type="text" id="employment" name="employment" required onChange={(e)=> setData((prevObject) => ({
+                <input value={data.employment_status} type="text" id="employment" name="employment" required onChange={(e)=> setData((prevObject) => ({
                                                                             ...prevObject,
                                                                             employment_status: e.target.value, 
                                                                             }))}/>
