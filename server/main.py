@@ -32,8 +32,12 @@ class RiskAssessment:
             income = float(income_str)
 
             # Calculate risk score
-            risk_score = (credit_score / 1000) * 0.7 + (loan_amount / income) * 0.2 + (
-                1 if application.get('employment_status').lower() == 'employed' else 0) * 0.1
+            credit_score_factor = credit_score / 800.0  # Assuming a maximum credit score of 800
+            debt_to_income_factor = loan_amount / income
+            employment_status_factor = 1.0 if application.get('employment_status').lower() == "employed" else 1.5
+
+            # Calculate the overall risk score
+            risk_score = (credit_score_factor + debt_to_income_factor + employment_status_factor) / 4.0
 
             return risk_score
         else:
@@ -74,52 +78,64 @@ def create_new_loan_application():
     data = request.get_json().get('data')
 
     new_application_id = str(uuid.uuid4())
-    new_application = LoanApplication(
-        id=new_application_id,
-        application_name=data.get('application_name'),
-        user_id=data.get("user_id"),
-        credit_score=data.get('credit_score'),
-        loan_purpose=data.get('loan_purpose'),
-        loan_amount=data.get('loan_amount'),
-        income=data.get('income'),
-        employment_status=data.get('employment_status')
-    )
 
-    session.add(new_application)
+    if data.get('application_name') is not None and data.get('user_id') is not None \
+            and data.get('loan_purpose') is not None and data.get('loan_amount') is not None \
+            and data.get('credit_score') is not None and data.get('income') is not None \
+            and data.get('employment_status') is not None and int(data.get('income')) > int(data.get('loan_amount')):
 
-    risk_score = RiskAssessment.assess_risk(data)
+        new_application = LoanApplication(
+            id=new_application_id,
+            application_name=data.get('application_name'),
+            user_id=data.get("user_id"),
+            credit_score=data.get('credit_score'),
+            loan_purpose=data.get('loan_purpose'),
+            loan_amount=data.get('loan_amount'),
+            income=data.get('income'),
+            employment_status=data.get('employment_status')
+        )
 
-    new_risk_score = LoanStatus(
-        loan_application_id=new_application_id,
-        risk_score=risk_score,
-        status=("Approved" if risk_score > 0.5 else "Denied"),
-        id=str(uuid.uuid4())
-    )
+        session.add(new_application)
 
-    session.add(new_risk_score)
-    session.commit()
+        risk_score = RiskAssessment.assess_risk(data)
 
-    return jsonify(
-        data
-    ), 200
+        new_risk_score = LoanStatus(
+            loan_application_id=new_application_id,
+            risk_score=risk_score,
+            status=("Approved" if risk_score < 0.5 else "Denied"),
+            id=str(uuid.uuid4())
+        )
+
+        session.add(new_risk_score)
+        session.commit()
+
+        return jsonify(
+            data
+        ), 200
+    else:
+        return jsonify({'error': 'Error in creating Loan Application'}), 404
 
 
 @app.route("/create_new_user", methods=["POST"])
 def create_new_user():
     data = request.get_json()
 
-    new_user_id = str(uuid.uuid4())
-    new_user = User(
-        id=new_user_id,
-        name=data.get('name')
-    )
+    if data.get('name') is not None:
 
-    session.add(new_user)
-    session.commit()
+        new_user_id = str(uuid.uuid4())
+        new_user = User(
+            id=new_user_id,
+            name=data.get('name')
+        )
 
-    return jsonify(
-        data
-    ), 200
+        session.add(new_user)
+        session.commit()
+
+        return jsonify(
+            data
+        ), 200
+    else:
+        return jsonify({'error': 'Error in creating User'}), 404
 
 
 @app.route("/get_status", methods=["POST"])
@@ -130,7 +146,7 @@ def get_status():
         single = application.to_dict()
         return single, 200
     else:
-        return jsonify({'error': 'Risk Score not found'}), 404
+        return jsonify({'error': 'Loan Status not found'}), 404
 
 
 @app.route("/get_all_per_user", methods=["POST"])
@@ -141,7 +157,7 @@ def get_all_loan_applications_per_user():
         all = [application.to_dict() for application in applications]
         return all, 200
     else:
-        return jsonify({'error': 'Risk Score not found'}), 404
+        return jsonify({'error': 'Loan Applications not found'}), 404
 
 
 @app.route("/update_application_name", methods=["POST"])
@@ -153,11 +169,13 @@ def update_application_name():
     if application:
         application.application_name = data.get('application_name')
 
-    session.commit()
+        session.commit()
 
-    return jsonify(
-        data
-    ), 200
+        return jsonify(
+            data
+        ), 200
+    else:
+        return jsonify({'error': 'Loan Application not found'}), 404
 
 
 @app.route('/delete_application', methods=['POST'])
