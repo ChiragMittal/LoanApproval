@@ -186,6 +186,40 @@ class TestLoanApprovalSystem(unittest.TestCase):
         })
         mock_post.assert_called_once_with('http://127.0.0.1:5000/get_status', json=data_to_post)
 
+    @patch('requests.post')  # Patch the requests.post method
+    def test_post_delete_all_user(self, mock_post):
+        # Set up the mock response for a successful API POST
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {'message': 'User deleted successfully'}
+        mock_post.return_value = mock_response
+
+        # Call the function under test
+        data_to_post = {
+
+        }
+        result = post_data_to_api('http://127.0.0.1:5000/delete_all_user', data_to_post)
+        # Assertions
+        self.assertEqual(result, {'message': 'User deleted successfully'})
+        mock_post.assert_called_once_with('http://127.0.0.1:5000/delete_all_user', json=data_to_post)
+
+    @patch('requests.post')  # Patch the requests.post method
+    def test_post_delete_all_applications(self, mock_post):
+        # Set up the mock response for a successful API POST
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {'message': 'Application deleted successfully'}
+        mock_post.return_value = mock_response
+
+        # Call the function under test
+        data_to_post = {
+
+        }
+        result = post_data_to_api('http://127.0.0.1:5000/delete_all_application', data_to_post)
+        # Assertions
+        self.assertEqual(result, {'message': 'Application deleted successfully'})
+        mock_post.assert_called_once_with('http://127.0.0.1:5000/delete_all_application', json=data_to_post)
+
 
 if __name__ == '__main__':
     unittest.main()
